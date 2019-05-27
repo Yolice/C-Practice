@@ -37,7 +37,7 @@ int strindex(char *src,char ch)
 }
 int main()
 {
-	char dst[100]="Hello This is Test,rihgt?";
+	char dst[100]="Hello This is Test,right?";
 	char src[]="Nope";
 	char test='z';
 	int a=strindex(dst,test);
