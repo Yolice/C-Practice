@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/*malloc没有检测指针是否是NULL*/
+
+
+
 typedef struct node{
 	int data;
 	struct node* next;
