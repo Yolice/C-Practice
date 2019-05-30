@@ -10,11 +10,6 @@ typedef struct node{
 	struct node* next;
 }Node;
 
-typedef struct d_node{
-	int data;
-	struct d_node *prev;
-	struct d_node *next;
-}; 
 
 typedef struct List{
 	struct node *head;
