@@ -10,19 +10,77 @@ typedef struct node {
 }Node;
 
 
-typedef struct List {
+typedef struct List {   //在insert和delete等操作时候用temp来代替head移动结点，head还是要指向第一个结点不动
 	struct node* head=NULL;
-	void InitialList(int first, int last); //value表示默认会构造一个[first-value]的顺序链表,并且返回一个头指针 
+	void InitialList(int first, int last); //初始化head永远指向头，prev指向未插入时的最后一个结点，newnode指向准备插入的新结点 
 	void InsertList(int index, int value); //index是插入的索引值，在index的位置后插入新的值 。插入分为head后第一个，中间，以及最后一个插入三种情况。
 	int DeleteList(int value);//删除索引值为index的结点
 	int FindNode(int value);//找到值为value的结点，并返回他的索引值
 	int TraversalList();//从头结点开始遍历整个链表 ,返回整个链表元素个数 
 }List;
 
-typedef struct stack {
-	struct node* top;
 
+typedef struct stack {
+	struct node* top=NULL;   //top=NULL时有空栈,top永远指向栈顶。利用前置插入和前置删除即可
+	bool is_empty();
+	void Push(int value);
+	int Pop();
+	void Traversal();
 }Stack;
+
+typedef struct queue{
+
+}Queue;
+
+bool stack::is_empty()
+{
+	if (top == NULL)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void stack::Push(int value)
+{
+	struct node* new_node = (struct node*)malloc(sizeof(struct node));
+	new_node->data = value;
+	if (top == NULL)
+	{
+		new_node->next = NULL;
+		top = new_node;
+	}
+	else
+	{
+		new_node->next = top;
+		top = new_node;
+	}
+}
+
+int stack::Pop()
+{
+	int result;
+
+	if (!is_empty())
+	{
+		result = top->data;
+		top = top->next;
+	}
+	return result;
+}
+
+void stack::Traversal()
+{
+	struct node* temp = top;
+	while (temp != NULL)
+	{
+		printf("%d\n", temp->data);
+		temp = temp->next;
+	}
+}
 
 void  List::InitialList(int first, int last)
 {
@@ -143,7 +201,14 @@ int main()
 	a.InsertList(0, 100);
 	a.DeleteList(8);
 	a.DeleteList(100);
-	a.TraversalList();*/
-	
+	a.TraversalList();
+	Stack a;
+	a.Push(10);
+	a.Push(20);
+	printf("%d\n",a.Pop());
+	a.Push(30);
+	a.Push(40);
+	a.Traversal();
+	*/
 	return 0;
 }
