@@ -28,9 +28,76 @@ typedef struct stack {
 	void Traversal();
 }Stack;
 
-typedef struct queue{
-
+typedef struct queue{    //后插入队前删出队
+	struct node* front=NULL;
+	struct node* rear=NULL;
+	bool is_empty();
+	void enqueue(int value);
+	int dequeue();
+	void Traversal();
 }Queue;
+
+bool queue::is_empty()
+{
+	if (front == NULL && rear == NULL)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void queue::enqueue(int value)
+{
+	struct node* new_node = (struct node*)malloc(sizeof(struct node));
+	/*if (new_node == NULL)
+	{
+		printf("false");
+		exit(1);
+	}*/
+	new_node->data = value;
+	new_node->next = NULL;
+	if (front == NULL && rear == NULL)
+	{
+		front = new_node;
+		rear = new_node;
+	}
+	else
+	{
+		rear->next = new_node;
+		rear = new_node;
+	}
+}
+
+int queue::dequeue()
+{
+	if (!is_empty())
+	{
+		int result = front->data;
+		struct node* p = front;
+		front = front->next;
+		free(p);
+		return result;
+	}
+	else
+	{
+		printf("false");
+		return 1;
+	}
+
+}
+
+void queue::Traversal()
+{
+	struct node* temp = front;
+	while (temp != NULL)
+	{
+		printf("element is %d\n", temp->data);
+		temp = temp->next;
+	}
+}
 
 bool stack::is_empty()
 {
@@ -63,12 +130,14 @@ void stack::Push(int value)
 int stack::Pop()
 {
 	int result;
+	struct node* p = top;
 
 	if (!is_empty())
 	{
 		result = top->data;
 		top = top->next;
 	}
+	free(p);
 	return result;
 }
 
@@ -209,6 +278,11 @@ int main()
 	a.Push(30);
 	a.Push(40);
 	a.Traversal();
-	*/
+	Queue a;
+	a.enqueue(0);
+	a.enqueue(10);
+	a.enqueue(20);
+	a.dequeue();
+	a.Traversal();*/
 	return 0;
 }
