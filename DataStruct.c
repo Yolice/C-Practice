@@ -9,7 +9,6 @@ typedef struct node {
 	struct node* next;
 }Node;
 
-
 typedef struct List {   //在insert和delete等操作时候用temp来代替head移动结点，head还是要指向第一个结点不动
 	struct node* head=NULL;
 	void InitialList(int first, int last); //初始化head永远指向头，prev指向未插入时的最后一个结点，newnode指向准备插入的新结点 
@@ -19,9 +18,8 @@ typedef struct List {   //在insert和delete等操作时候用temp来代替head�
 	int TraversalList();//从头结点开始遍历整个链表 ,返回整个链表元素个数 
 }List;
 
-
-typedef struct stack {
-	struct node* top=NULL;   //top=NULL时有空栈,top永远指向栈顶。利用前置插入和前置删除即可
+typedef struct stack { //前插入栈前删出栈
+	struct node* top=NULL;   //top=NULL时有空栈,top永远指向栈顶。
 	bool is_empty();
 	void Push(int value);
 	int Pop();
@@ -67,7 +65,7 @@ void queue::enqueue(int value)
 	else
 	{
 		rear->next = new_node;
-		rear = new_node;
+		rear = new_node;   //因为front和rear都是指向头结点，所以rear->next=new_node等于front->next=new_node的效果
 	}
 }
 
@@ -198,7 +196,6 @@ void List::InsertList(int index, int value)
 	}
 }
 
-
 int List::FindNode(int value)
 {
 	int index = 0;
@@ -218,7 +215,6 @@ int List::FindNode(int value)
 	}
 	return -1;//查找失败 
 }
-
 
 int List::DeleteList(int value)
 {
