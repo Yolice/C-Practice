@@ -6,7 +6,7 @@
 
 typedef struct node {
 	int data;
-	struct node* next;
+	struct node* next=NULL;
 }Node;
 
 typedef struct List {   //在insert和delete等操作时候用temp来代替head移动结点，head还是要指向第一个结点不动
@@ -34,6 +34,77 @@ typedef struct queue{    //后插入队前删出队
 	int dequeue();
 	void Traversal();
 }Queue;
+
+typedef struct tree_node {
+	int data;
+	struct tree_node* left=NULL;
+	struct tree_node* right=NULL;
+}Tree_node;
+
+typedef struct BinarySearchTree
+{
+	struct tree_node* root=NULL;   //root是指向树结点的指针
+	void InitialBinarySearchTree(struct tree_node* root_node,int value); 
+	void PreTraversal(struct tree_node* root_node);
+	void MidTraversal(struct tree_node* root_node);
+	void RearTraversal(struct tree_node* root_node);
+}BST;
+
+void BinarySearchTree::InitialBinarySearchTree(struct tree_node* root_node,int value)
+{
+	struct tree_node* new_node = (struct tree_node*)malloc(sizeof(struct tree_node));
+	if (new_node == NULL)
+	{
+		exit(1);
+	}
+	new_node->data = value;
+	new_node->left = NULL;
+	new_node->right = NULL;  //left和right初始化NULL是必不可少的
+	if (root_node == NULL)
+	{
+		root_node = new_node;
+		if (root == NULL)
+		{
+			root = root_node;
+		}
+	}
+	else
+	{
+		if (value < root_node->data)
+		{
+			if (root_node->left == NULL)
+			{
+				root_node->left = new_node;
+			}
+			else
+			{
+				InitialBinarySearchTree(root_node->left, value);
+			}
+		}
+		else
+		{
+			if (root_node->right == NULL)
+			{
+				root_node->right = new_node;
+			}
+			else
+			{
+				InitialBinarySearchTree(root_node->right, value);
+			}
+		}
+	}
+}
+
+void BinarySearchTree::PreTraversal(struct tree_node* root_node)
+{
+	if (root_node)   //树的遍历因为用到了函数递归，所以要用if而不是while，while的情况下没有终止条件会死循环
+	{
+		printf("elemnt is %d\n", root_node->data);
+		PreTraversal(root_node->left);
+		PreTraversal(root_node->right);
+	}
+}
+
 
 bool queue::is_empty()
 {
@@ -127,7 +198,7 @@ void stack::Push(int value)
 
 int stack::Pop()
 {
-	int result;
+	int result=0;
 	struct node* p = top;
 
 	if (!is_empty())
@@ -261,7 +332,7 @@ int List::TraversalList()
 
 int main()
 {
-	/*List a;
+	/*List a;   
 	a.InitialList(0, 10);
 	a.InsertList(0, 100);
 	a.DeleteList(8);
@@ -280,5 +351,14 @@ int main()
 	a.enqueue(20);
 	a.dequeue();
 	a.Traversal();*/
+	BinarySearchTree a;
+	a.InitialBinarySearchTree(a.root,10);
+	a.InitialBinarySearchTree(a.root, 5);
+	a.InitialBinarySearchTree(a.root, 20);
+	a.InitialBinarySearchTree(a.root, 3);
+	a.InitialBinarySearchTree(a.root, 1);
+	a.InitialBinarySearchTree(a.root, 50);
+	a.InitialBinarySearchTree(a.root, 100);
+	a.PreTraversal(a.root);
 	return 0;
 }
