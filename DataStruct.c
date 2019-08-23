@@ -47,7 +47,7 @@ typedef struct BinarySearchTree
 {
 	struct tree_node* root=NULL;   //root是指向树结点的指针
 	void InitialBinarySearchTree(struct tree_node* root_node,int value); 
-	int DeleteTreeNode(struct tree_node* root_node);
+	bool DeleteTreeNode(struct tree_node* root_node,int value);   //删除值为value的结点
 	struct tree_node* FindNode(struct tree_node* root_node,int value);
 	struct tree_node* FindMinNode(struct tree_node* root_node);     //如果被删除的结点有两个叶子，那么从右子树中跳最小结点来代替被删除的结点
 	void PreTraversal(struct tree_node* root_node);
@@ -57,7 +57,7 @@ typedef struct BinarySearchTree
 
 struct tree_node* BinarySearchTree::FindMinNode(struct tree_node* root_node)
 {
-	struct tree_node* Max_node = root_node->right;
+	struct tree_node* Max_node = root_node;
 	while (Max_node->left)
 	{
 		Max_node = Max_node->left;
@@ -66,9 +66,73 @@ struct tree_node* BinarySearchTree::FindMinNode(struct tree_node* root_node)
 	return Max_node;
 }
 
-int BinarySearchTree::DeleteTreeNode(struct tree_node* root_node)
+bool BinarySearchTree::DeleteTreeNode(struct tree_node* root_node,int value)   //没有写完，还未考虑完所有的情况
 {
-	
+	struct tree_node* Node = FindNode(root, value);
+	if (Node == NULL)
+	{
+		printf("找不到删除的值");
+		return false;
+	}
+	else
+	{
+		if (Node->left && Node->right)  //第一种情况，被删除结点有两个子结点时
+		{
+			struct tree_node* replace_node=FindMinNode(Node->right);
+			if (Node->parent == NULL)   //如果被删除的结点是根结点
+			{
+				Node->left->parent = replace_node;
+				Node->right->parent = replace_node;
+				if (replace_node->right != NULL)    //也存replace_node->left==NULL情况，需另外讨论
+				{
+					replace_node->right->parent = replace_node->parent;
+					replace_node->parent->left = replace_node->right;
+
+				}
+				replace_node->left = Node->left;
+				replace_node->right = Node->right;
+				root = replace_node;
+				free(Node);
+				return true;
+			}
+			//左处理未完成
+			//if (Node->parent->left && Node->parent->left->data == Node->data) //如果是左子结点
+			//{
+			//	if (replace_node->right != NULL)
+			//	{
+			//		replace_node->right->parent = replace_node->parent;
+			//		replace_node->parent->left = replace_node->right;
+
+			//	}
+			//	replace_node->parent = Node->parent;
+			//	Node->left->parent = replace_node;
+			//	Node->right->parent = replace_node;
+			//	replace_node->left = Node->left;
+			//	replace_node->right = Node->right;
+			//	Node->parent->left = replace_node;
+			//	replace_node->parent->left = NULL;
+			//	free(Node);
+			//	return true;
+
+			//}
+			else if (Node->parent->right && Node->parent->right->data == Node->data) //如果是右子结点
+			{
+				if (replace_node->right != NULL)
+				{
+					replace_node->right->parent = replace_node->parent;
+					replace_node->parent->left = replace_node->right;
+				}
+				replace_node->parent = Node->parent;
+				Node->left->parent = replace_node;
+				Node->right->parent = replace_node;
+				replace_node->left = Node->left;
+				replace_node->right = Node->right;
+				Node->parent->right = replace_node;
+				free(Node);
+				return true;
+			}
+		}
+	}
 }
 
 struct tree_node* BinarySearchTree::FindNode(struct tree_node* root_node, int value)
@@ -427,6 +491,7 @@ int main()
 	a.InitialBinarySearchTree(a.root, 91);
 	a.InitialBinarySearchTree(a.root, 72);
 	a.InitialBinarySearchTree(a.root, 99);
-	
+	a.InitialBinarySearchTree(a.root, 27);
+	a.DeleteTreeNode(a.root, 20);
 	return 0;
 }
