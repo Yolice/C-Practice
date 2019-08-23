@@ -37,18 +37,62 @@ typedef struct queue{    //后插入队前删出队
 
 typedef struct tree_node {
 	int data;
-	struct tree_node* left=NULL;
-	struct tree_node* right=NULL;
+	struct tree_node* left = NULL;
+	struct tree_node* right = NULL;
+	struct tree_node* parent = NULL;
+
 }Tree_node;
 
 typedef struct BinarySearchTree
 {
 	struct tree_node* root=NULL;   //root是指向树结点的指针
 	void InitialBinarySearchTree(struct tree_node* root_node,int value); 
+	int DeleteTreeNode(struct tree_node* root_node);
+	struct tree_node* FindNode(struct tree_node* root_node,int value);
+	struct tree_node* FindMinNode(struct tree_node* root_node);     //如果被删除的结点有两个叶子，那么从右子树中跳最小结点来代替被删除的结点
 	void PreTraversal(struct tree_node* root_node);
 	void MidTraversal(struct tree_node* root_node);
 	void RearTraversal(struct tree_node* root_node);
 }BST;
+
+struct tree_node* BinarySearchTree::FindMinNode(struct tree_node* root_node)
+{
+	struct tree_node* Max_node = root_node->right;
+	while (Max_node->left)
+	{
+		Max_node = Max_node->left;
+	}
+
+	return Max_node;
+}
+
+int BinarySearchTree::DeleteTreeNode(struct tree_node* root_node)
+{
+	
+}
+
+struct tree_node* BinarySearchTree::FindNode(struct tree_node* root_node, int value)
+{
+	if (root_node == NULL)    //终止递归用if来判断
+	{
+		return false;
+	}
+	else
+	{
+		if (root_node->data == value)
+		{
+			return root_node;
+		}
+		else if (value < root_node->data)
+		{
+			FindNode(root_node->left, value);
+		}
+		else if (value > root_node->data)
+		{
+			FindNode(root_node->right, value);
+		}
+	}
+}
 
 void BinarySearchTree::InitialBinarySearchTree(struct tree_node* root_node,int value)
 {
@@ -60,7 +104,8 @@ void BinarySearchTree::InitialBinarySearchTree(struct tree_node* root_node,int v
 	new_node->data = value;
 	new_node->left = NULL;
 	new_node->right = NULL;  //left和right初始化NULL是必不可少的
-	if (root_node == NULL)
+	new_node->parent = NULL;
+	if (root_node == NULL)  //只存在于第一次创建root结点时的情况
 	{
 		root_node = new_node;
 		if (root == NULL)
@@ -75,6 +120,7 @@ void BinarySearchTree::InitialBinarySearchTree(struct tree_node* root_node,int v
 			if (root_node->left == NULL)
 			{
 				root_node->left = new_node;
+				new_node->parent = root_node;
 			}
 			else
 			{
@@ -86,6 +132,7 @@ void BinarySearchTree::InitialBinarySearchTree(struct tree_node* root_node,int v
 			if (root_node->right == NULL)
 			{
 				root_node->right = new_node;
+				new_node->parent = root_node;
 			}
 			else
 			{
@@ -97,7 +144,7 @@ void BinarySearchTree::InitialBinarySearchTree(struct tree_node* root_node,int v
 
 void BinarySearchTree::PreTraversal(struct tree_node* root_node)
 {
-	if (root_node)   //树的遍历因为用到了函数递归，所以要用if而不是while，while的情况下没有终止条件会死循环
+	if (root_node)   //树的遍历因为用到了函数递归，所以要用if而不是while，while的情况下在当前循环root_node永远是真的所以会死循环
 	{
 		printf("elemnt is %d\n", root_node->data);
 		PreTraversal(root_node->left);
@@ -105,6 +152,25 @@ void BinarySearchTree::PreTraversal(struct tree_node* root_node)
 	}
 }
 
+void BinarySearchTree::MidTraversal(struct tree_node* root_node)
+{
+	if (root_node)
+	{
+		MidTraversal(root_node->left);
+		printf("elemnt is %d\n", root_node->data);
+		MidTraversal(root_node->right);
+	}
+}
+
+void BinarySearchTree::RearTraversal(struct tree_node* root_node)
+{
+	if (root_node)
+	{
+		RearTraversal(root_node->left);
+		RearTraversal(root_node->right);
+		printf("elemnt is %d\n", root_node->data);
+	}
+}
 
 bool queue::is_empty()
 {
@@ -314,7 +380,6 @@ int List::DeleteList(int value)
 	}
 }
 
-
 int List::TraversalList()
 {
 	int length = 0;
@@ -352,13 +417,16 @@ int main()
 	a.dequeue();
 	a.Traversal();*/
 	BinarySearchTree a;
-	a.InitialBinarySearchTree(a.root,10);
-	a.InitialBinarySearchTree(a.root, 5);
+	a.InitialBinarySearchTree(a.root,41);
 	a.InitialBinarySearchTree(a.root, 20);
-	a.InitialBinarySearchTree(a.root, 3);
-	a.InitialBinarySearchTree(a.root, 1);
+	a.InitialBinarySearchTree(a.root, 65);
+	a.InitialBinarySearchTree(a.root, 11);
+	a.InitialBinarySearchTree(a.root, 29);
+	a.InitialBinarySearchTree(a.root, 32);
 	a.InitialBinarySearchTree(a.root, 50);
-	a.InitialBinarySearchTree(a.root, 100);
-	a.PreTraversal(a.root);
+	a.InitialBinarySearchTree(a.root, 91);
+	a.InitialBinarySearchTree(a.root, 72);
+	a.InitialBinarySearchTree(a.root, 99);
+	
 	return 0;
 }
