@@ -1,8 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
 /*malloc没有检测指针是否是NULL*/
 
+typedef struct sort {
+	//int list[10] = { 6,3,1,9,8,2,5,4,7,0 };
+	int list[10] = { 1,2,3,4,5,6,7,8,9,10 };
+	int length = sizeof(list) / sizeof(int);  //总数据长度除以单个数据长度等于数据个数
+	void Bubble_sort(int* list);
+	void Quick_sort(int* list);
+	bool BinarySearch(int left,int right,int value);
+}Sort;
+
+typedef struct hash_table {
+
+}Hash;
 
 typedef struct node {
 	int data;
@@ -54,6 +66,75 @@ typedef struct BinarySearchTree
 	void MidTraversal(struct tree_node* root_node);
 	void RearTraversal(struct tree_node* root_node);
 }BST;
+
+typedef struct UnionFind
+{
+	int pre[10];
+	int find(int root);
+	void join(int x, int y);
+}unionfind;
+
+void sort::Bubble_sort(int *list)
+{
+	int temp = 0;
+	for (int i = length-1; i >0; i--)
+	{
+		for (int j = 0; j < i; j++)
+		{
+			if (list[j] > list[j + 1])
+			{
+				temp = list[j];
+				list[j] = list[j + 1];
+				list[j + 1] = temp;
+			}
+		}
+	}
+}
+
+bool sort::BinarySearch(int left, int right,int value)
+{
+	if (left >= right)
+	{
+		return false;
+	}
+	int mid = (left + right) / 2;
+	if (list[mid] == value)
+	{
+		return true;
+	}
+	else if (value < list[mid])
+	{
+		BinarySearch(left, mid - 1, value);
+	}
+	else if (value > list[mid])
+	{
+		BinarySearch(mid + 1, right, value);
+	}
+}
+
+void sort::Quick_sort(int* list)
+{
+	
+}
+
+int UnionFind::find(int root)
+{
+	while (pre[root] != root)
+	{
+		root = pre[root];
+	}
+	return root;
+}
+
+void UnionFind::join(int x, int y)
+{
+	int root_x = find(x);
+	int root_y = find(y);
+	if (root_x != root_y)
+	{
+		pre[root_x] = root_y;
+	}
+}
 
 struct tree_node* BinarySearchTree::FindMinNode(struct tree_node* root_node)
 {
@@ -479,7 +560,7 @@ int main()
 	a.enqueue(10);
 	a.enqueue(20);
 	a.dequeue();
-	a.Traversal();*/
+	a.Traversal();
 	BinarySearchTree a;
 	a.InitialBinarySearchTree(a.root,41);
 	a.InitialBinarySearchTree(a.root, 20);
@@ -493,5 +574,33 @@ int main()
 	a.InitialBinarySearchTree(a.root, 99);
 	a.InitialBinarySearchTree(a.root, 27);
 	a.DeleteTreeNode(a.root, 20);
+	unionfind a;
+	for (int i = 0; i < 10; i++)
+	{
+		a.pre[i] = i;
+	}
+	a.join(0, 7);
+	a.join(2, 8);
+	a.join(7, 8);
+	for (int i = 0; i < 10; i++)
+	{
+		printf("%d,", a.pre[i]);
+	}
+	*/
+	sort a;
+	/*a.bubble_sort(a.list);
+	for (int i = 0; i < 10; i++)
+	{
+		printf("%d,",a.list[i]);
+	}
+	bool b=a.BinarySearch(0, a.length, 10);
+	if (b)
+	{
+		printf("yes");
+	}
+	else
+	{
+		printf("false");
+	}*/
 	return 0;
 }
