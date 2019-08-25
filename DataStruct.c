@@ -4,16 +4,19 @@
 /*malloc没有检测指针是否是NULL*/
 
 typedef struct sort {
-	//int list[10] = { 6,3,1,9,8,2,5,4,7,0 };
-	int list[10] = { 1,2,3,4,5,6,7,8,9,10 };
+	int list[10] = { 6,1,2,7,9,3,4,5,10,8 };
 	int length = sizeof(list) / sizeof(int);  //总数据长度除以单个数据长度等于数据个数
 	void Bubble_sort(int* list);
-	void Quick_sort(int* list);
+	void Quick_sort(int start,int end);
 	bool BinarySearch(int left,int right,int value);
 }Sort;
 
 typedef struct hash_table {
-
+	struct node *Hash[100];  //这是一个指针数组，里面存放struct node*类型的指针，他们指向node结点
+	int length = 100;  //默认哈希表是一个100长度的数组
+	int Hash_addr(int key);
+	void InsertValue(int value);
+	void DeleteValue(int value);  //删除需要对链表进行删除操作，包括查找也是链表的查找
 }Hash;
 
 typedef struct node {
@@ -74,6 +77,32 @@ typedef struct UnionFind
 	void join(int x, int y);
 }unionfind;
 
+int Hash::Hash_addr(int key)
+{
+	return key % length;
+}
+
+void Hash::InsertValue(int value)
+{
+	int addr = Hash_addr(value);
+	struct node* new_node = (struct node*)malloc(sizeof(struct node));
+	new_node->data = value;
+	new_node->next = NULL;
+	if (!Hash[addr])
+	{
+		Hash[addr] = new_node;
+	}
+	else  //假如有一个结点了，即firstnode是存在的
+	{
+		struct node* first_node = Hash[addr];
+		while (first_node->next)
+		{
+			first_node = first_node->next;
+		}
+		first_node->next = new_node;
+	}
+}
+
 void sort::Bubble_sort(int *list)
 {
 	int temp = 0;
@@ -112,9 +141,34 @@ bool sort::BinarySearch(int left, int right,int value)
 	}
 }
 
-void sort::Quick_sort(int* list)
+void sort::Quick_sort(int start,int end) //可以使用指针，但用索引操作数组更方便
 {
-	
+	int temp = list[start];  //保存好基准数
+	int change = 0;
+	int i = start;  //必要的临时储存
+	int j = end;
+	if (start > end)
+	{
+		return;
+	}
+	while (i != j)
+	{
+		while (list[j] >= temp && i < j)
+		{
+			j--;
+		}
+		while (list[i] <= temp && i < j)
+		{
+			i++;
+		}
+		change= list[i];
+		list[i] = list[j];
+		list[j] = change;
+	}
+	list[start] = list[i];
+	list[i] = temp;
+	Quick_sort(start, i-1);
+	Quick_sort(i + 1, end);
 }
 
 int UnionFind::find(int root)
@@ -586,9 +640,8 @@ int main()
 	{
 		printf("%d,", a.pre[i]);
 	}
-	*/
 	sort a;
-	/*a.bubble_sort(a.list);
+	a.bubble_sort(a.list);
 	for (int i = 0; i < 10; i++)
 	{
 		printf("%d,",a.list[i]);
@@ -601,6 +654,16 @@ int main()
 	else
 	{
 		printf("false");
-	}*/
+	}
+	a.Quick_sort(0,a.length-1);
+	Hash a;
+	for (int i = 0; i < 100; i++)
+	{
+		a.Hash[i] = NULL;
+	}
+	a.InsertValue(111111111111110);
+	a.InsertValue(30);
+	a.InsertValue(20);
+	printf("%d", a.Hash[a.Hash_addr(20)]->data);*/
 	return 0;
 }
