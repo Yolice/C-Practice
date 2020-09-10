@@ -4,7 +4,8 @@
 #include <ctype.h>
 
 //记录一段文本的单词出现频率
-
+#define true 1
+#define false 0
 
 
 
@@ -27,7 +28,7 @@ void Upper_any_words(char* buffer_points)
 	}
 }
 
-bool Search_Same_name(struct Node* head, char* compare_name)
+int Search_Same_name(struct Node* head, char* compare_name)
 {
 	head = head->next;
 	while (head)
