@@ -48,7 +48,7 @@ void CreateNode_with_name(char* name_points, struct Node* head)
 	new_node->record_word = (char*)malloc(sizeof(char) * 100);
 	new_node->frequency = 1;
 	new_node->next = NULL;
-	bool Flag = Search_Same_name(head, name_points);
+	int Flag = Search_Same_name(head, name_points);
 	if (Flag)
 	{
 		while (head->next)
@@ -94,13 +94,13 @@ void Counter_any_words_frequency(char* buffer_points, struct Node* head)
 
 int main(int argc, char* argv[])
 {
-	Node* head = (struct Node*)malloc(sizeof(struct Node));
+	struct Node* head = (struct Node*)malloc(sizeof(struct Node));
 	head->record_word = (char*)malloc(sizeof(char) * 100);
 	strcpy(head->record_word, "");
 	head->frequency = 0;
 	head->next = NULL;
 	FILE* fp = fopen(argv[1], "r");
-	char buffer_temp[100] = {""};
+	char buffer_temp[100] = { "" };
 	char* buffer_temp_point = buffer_temp;
 	char buffer[10000] = { "" };
 	char* buffer_point = buffer;
