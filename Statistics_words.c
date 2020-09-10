@@ -51,7 +51,7 @@ void CreateNode_with_name(char* name_points, struct Node* head)
 	int Flag = Search_Same_name(head, name_points);
 	if (Flag)
 	{
-		while (head->next)
+		while (head)
 		{
 			if (!(strcmp(head->record_word, name_points)))
 			{
