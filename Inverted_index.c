@@ -3,7 +3,6 @@
 #include <string.h>
 #include <ctype.h>
 
-
 #define true 1
 #define false 0
 
