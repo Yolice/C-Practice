@@ -22,6 +22,8 @@ struct WORD
 
 char* Direct_Document = "C:\\Users\\yolic\\source\\repos\\Where\\Debug\\corpusWP\\";
 
+const char delimiter[20] = " /-.,:;?!()\n";
+
 struct WORD* Word_hash_array[100000];
 
 void Upper_any_words(char* buffer_points)
@@ -76,10 +78,10 @@ char* Return_all_text(char* file_name)
 }
 
 
-void Build_word_information(char* word, char* file_name)  
+void Build_word_information(char* word, char* file_name)
 {
 	int addr_word = APHash(word);
-	if (!Word_hash_array[addr_word]) 
+	if (!Word_hash_array[addr_word])
 	{
 		struct WORD* new_word = (struct WORD*)malloc(sizeof(struct WORD));
 		new_word->word_name = (char*)malloc(sizeof(char) * 20);
@@ -91,12 +93,12 @@ void Build_word_information(char* word, char* file_name)
 		new_word->current_word->next = NULL;
 		Word_hash_array[addr_word] = new_word;
 	}
-	else if (!strcmp(Word_hash_array[addr_word]->word_name, word)) 
+	else if (!strcmp(Word_hash_array[addr_word]->word_name, word))
 	{
 		{
 			struct WORD* hash_element = Word_hash_array[addr_word];
 			struct WORD_WITH_TF* hash_element_current_word = hash_element->current_word;
-			while (hash_element_current_word->next) 
+			while (hash_element_current_word->next)
 			{
 				if (!strcmp(hash_element_current_word->file_name, file_name))
 				{
@@ -128,7 +130,6 @@ void Build_word_information(char* word, char* file_name)
 void Build_inverted_index(char* all_text, char* file_name)
 {
 	Upper_any_words(all_text);
-	const char delimiter[20] = " /-.,:;?!()\n";
 	char* token = strtok(all_text, delimiter);
 	while (token)
 	{
@@ -219,9 +220,9 @@ void Response_system(char* query)
 	char response_direct[100] = { "" };
 	strcpy(response_direct, Direct_Document);
 	strcat(response_direct, text_name);
-	
+
+	printf("%s", response_direct);
 	printf("\n\n");
-	printf("%s:", Word_hash_array[addr]->word_name);
 	FILE* fp = fopen(response_direct, "r");
 	if (fp == NULL)
 	{
@@ -229,8 +230,29 @@ void Response_system(char* query)
 	}
 	while (fgets(output_buffer, 500, fp))
 	{
-		printf("%s ", output_buffer);
+		char* output_text = (char*)malloc(sizeof(char) * 500);
+		strcpy(output_text, output_buffer);
+		Upper_any_words(output_buffer);
+		char* token = strtok(output_buffer, delimiter);
+		char* last_word = (char*)malloc(sizeof(char) * 20);
+		while (token)
+		{
+			if (!strcmp(token, "IS"))
+			{
+				char compare_word[20];
+				strcpy(compare_word, Word_hash_array[addr]->word_name);
+				Upper_any_words(compare_word);
+				if (!strcmp(last_word, compare_word))
+				{
+					printf("%s", output_text);
+					return;
+				}
+			}
+			strcpy(last_word, token);
+			token = strtok(NULL, delimiter);
+		}
 	}
+	printf("There is no any information about this word..");
 	fclose(fp);
 }
 
