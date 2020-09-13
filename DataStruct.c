@@ -253,7 +253,7 @@ void Response_system(char* query)
 	strcpy(response_direct, Direct_Document);
 	strcat(response_direct, text_name);
 
-	printf("%s", response_direct);
+	//printf("%s", response_direct);
 	printf("\n\n");
 	FILE* fp = fopen(response_direct, "r");
 	if (fp == NULL)
@@ -266,21 +266,28 @@ void Response_system(char* query)
 		strcpy(output_text, output_buffer);
 		Upper_any_words(output_buffer);
 		char* token = strtok(output_buffer, delimiter);
-		char* last_word = (char*)malloc(sizeof(char) * 20);
+		int Flag_is = 0;
+		int Flag_are = 0;
+		int Flag_query = 0;
 		while (token)
 		{
-			if (!strcmp(token, "IS"))
+			if (!strcmp(token, query))
 			{
-				char compare_word[20];
-				strcpy(compare_word, Word_hash_array[addr]->word_name);
-				Upper_any_words(compare_word);
-				if (!strcmp(last_word, compare_word))
-				{
-					printf("%s", output_text);
-					return;
-				}
+				Flag_query = 1;
 			}
-			strcpy(last_word, token);
+			else if (!strcmp(token, "IS"))
+			{
+				Flag_is = 1;
+			}
+			else if (!strcmp(token, "ARE"))
+			{
+				Flag_are = 1;
+			}
+			if (Flag_query && (Flag_is || Flag_are))
+			{
+				printf("%s", output_text);
+				return;
+			}
 			token = strtok(NULL, delimiter);
 		}
 	}
@@ -290,9 +297,9 @@ void Response_system(char* query)
 
 int main(int argc, char* argv[])
 {
-	char query_word[20] = { "tokyo" };
+	char query_word[20];
 	printf("input your query word:");
-	//scanf("%s", query_word);
+	scanf("%s", query_word);
 	Response_system(query_word);
 	return 0;
 }
