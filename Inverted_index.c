@@ -20,6 +20,13 @@ struct WORD
 	struct WORD* crash_list;
 };
 
+struct IS_QUERY
+{
+	char* file_name;
+	int score;
+	struct IS_QUERY* next;
+};
+
 char* Direct_Document = "C:\\Users\\yolic\\source\\repos\\Where\\Debug\\corpusWP\\";
 
 const char delimiter[20] = " /-.,:;?!()\n";
@@ -204,24 +211,49 @@ void Response_system(char* query)
 		printf("There is no any information about this word..\n");
 		exit(1);
 	}
-	struct WORD_WITH_TF* query_word = Word_hash_array[addr]->current_word;
 	int most_frequency = 0;
 	char text_name[100];
 	char output_buffer[500];
+	int Is_addr = APHash("IS");
+	struct IS_QUERY* head = (struct IS_QUERY*)malloc(sizeof(struct IS_QUERY));
+	char head_default_name[] = { "None" };
+	head->file_name = (char*)malloc(sizeof(char) * 20);
+	strcpy(head->file_name, head_default_name);
+	head->score = 0;
+	struct WORD_WITH_TF* query_word = Word_hash_array[addr]->current_word;
+	struct WORD_WITH_TF* query_is = Word_hash_array[Is_addr]->current_word;
+	struct WORD_WITH_TF* query_is_temp;
+
 	while (query_word->next)
 	{
-		if (query_word->frequency >= most_frequency)
+		query_is_temp = query_is;
+		while (query_is_temp->next)
 		{
-			strcpy(text_name, query_word->file_name);
-			most_frequency = query_word->frequency;
+			if (!strcmp(query_is_temp->file_name, query_word->file_name))
+			{
+				struct IS_QUERY* new_node = (struct IS_QUERY*)malloc(sizeof(struct IS_QUERY));
+				new_node->file_name = (char*)malloc(sizeof(char) * 20);
+				strcpy(new_node->file_name, query_word->file_name);
+				new_node->score = (query_is_temp->frequency) + (query_word->frequency);
+				if (new_node->score > head->score)
+				{
+					strcpy(head->file_name, new_node->file_name);
+					head->score = new_node->score;
+					head->next = new_node;
+				}
+			}
+			query_is_temp = query_is_temp->next;
 		}
 		query_word = query_word->next;
 	}
+
+	strcpy(text_name, head->file_name);
+
 	char response_direct[100] = { "" };
 	strcpy(response_direct, Direct_Document);
 	strcat(response_direct, text_name);
 
-	printf("%s", response_direct);
+	//printf("%s", response_direct);
 	printf("\n\n");
 	FILE* fp = fopen(response_direct, "r");
 	if (fp == NULL)
@@ -234,21 +266,28 @@ void Response_system(char* query)
 		strcpy(output_text, output_buffer);
 		Upper_any_words(output_buffer);
 		char* token = strtok(output_buffer, delimiter);
-		char* last_word = (char*)malloc(sizeof(char) * 20);
+		int Flag_is = 0;
+		int Flag_are = 0;
+		int Flag_query = 0;
 		while (token)
 		{
-			if (!strcmp(token, "IS"))
+			if (!strcmp(token, query))
 			{
-				char compare_word[20];
-				strcpy(compare_word, Word_hash_array[addr]->word_name);
-				Upper_any_words(compare_word);
-				if (!strcmp(last_word, compare_word))
-				{
-					printf("%s", output_text);
-					return;
-				}
+				Flag_query = 1;
 			}
-			strcpy(last_word, token);
+			else if (!strcmp(token, "IS"))
+			{
+				Flag_is = 1;
+			}
+			else if (!strcmp(token, "ARE"))
+			{
+				Flag_are = 1;
+			}
+			if (Flag_query && (Flag_is || Flag_are))
+			{
+				printf("%s", output_text);
+				return;
+			}
 			token = strtok(NULL, delimiter);
 		}
 	}
