@@ -1,669 +1,300 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-/*malloc没有检测指针是否是NULL*/
+#include <ctype.h>
 
-typedef struct sort {
-	int list[10] = { 6,1,2,7,9,3,4,5,10,8 };
-	int length = sizeof(list) / sizeof(int);  //总数据长度除以单个数据长度等于数据个数
-	void Bubble_sort(int* list);
-	void Quick_sort(int start,int end);
-	bool BinarySearch(int left,int right,int value);
-}Sort;
+#define true 1
+#define false 0
 
-typedef struct hash_table {
-	struct node *Hash[100];  //这是一个指针数组，里面存放struct node*类型的指针，他们指向node结点
-	int length = 100;  //默认哈希表是一个100长度的数组
-	int Hash_addr(int key);
-	void InsertValue(int value);
-	void DeleteValue(int value);  //删除需要对链表进行删除操作，包括查找也是链表的查找
-}Hash;
-
-typedef struct node {
-	int data;
-	struct node* next=NULL;
-}Node;
-
-typedef struct List {   //在insert和delete等操作时候用temp来代替head移动结点，head还是要指向第一个结点不动
-	struct node* head=NULL;
-	void InitialList(int first, int last); //初始化head永远指向头，prev指向未插入时的最后一个结点，newnode指向准备插入的新结点 
-	void InsertList(int index, int value); //index是插入的索引值，在index的位置后插入新的值 。插入分为head后第一个，中间，以及最后一个插入三种情况。
-	int DeleteList(int value);//删除索引值为index的结点
-	int FindNode(int value);//找到值为value的结点，并返回他的索引值
-	int TraversalList();//从头结点开始遍历整个链表 ,返回整个链表元素个数 
-}List;
-
-typedef struct stack { //前插入栈前删出栈
-	struct node* top=NULL;   //top=NULL时有空栈,top永远指向栈顶。
-	bool is_empty();
-	void Push(int value);
-	int Pop();
-	void Traversal();
-}Stack;
-
-typedef struct queue{    //后插入队前删出队
-	struct node* front=NULL;
-	struct node* rear=NULL;
-	bool is_empty();
-	void enqueue(int value);
-	int dequeue();
-	void Traversal();
-}Queue;
-
-typedef struct tree_node {
-	int data;
-	struct tree_node* left = NULL;
-	struct tree_node* right = NULL;
-	struct tree_node* parent = NULL;
-
-}Tree_node;
-
-typedef struct BinarySearchTree
+struct WORD_WITH_TF
 {
-	struct tree_node* root=NULL;   //root是指向树结点的指针
-	void InitialBinarySearchTree(struct tree_node* root_node,int value); 
-	bool DeleteTreeNode(struct tree_node* root_node,int value);   //删除值为value的结点
-	struct tree_node* FindNode(struct tree_node* root_node,int value);
-	struct tree_node* FindMinNode(struct tree_node* root_node);     //如果被删除的结点有两个叶子，那么从右子树中跳最小结点来代替被删除的结点
-	void PreTraversal(struct tree_node* root_node);
-	void MidTraversal(struct tree_node* root_node);
-	void RearTraversal(struct tree_node* root_node);
-}BST;
+	char* file_name;
+	int frequency;
+	struct WORD_WITH_TF* next;
+};
 
-typedef struct UnionFind
+struct WORD
 {
-	int pre[10];
-	int find(int root);
-	void join(int x, int y);
-}unionfind;
+	char* word_name;
+	struct WORD_WITH_TF* current_word;
+	struct WORD* crash_list;
+};
 
-int Hash::Hash_addr(int key)
+struct IS_QUERY
 {
-	return key % length;
-}
+	char* file_name;
+	int score;
+	struct IS_QUERY* next;
+};
 
-void Hash::InsertValue(int value)
+char* Direct_Document = "C:\\Users\\yolic\\source\\repos\\Where\\Debug\\corpusWP\\";
+
+const char delimiter[20] = " /-.,:;?!()\n";
+
+struct WORD* Word_hash_array[100000];
+
+void Upper_any_words(char* buffer_points)
 {
-	int addr = Hash_addr(value);
-	struct node* new_node = (struct node*)malloc(sizeof(struct node));
-	new_node->data = value;
-	new_node->next = NULL;
-	if (!Hash[addr])
+	while (*buffer_points)
 	{
-		Hash[addr] = new_node;
-	}
-	else  //假如有一个结点了，即firstnode是存在的
-	{
-		struct node* first_node = Hash[addr];
-		while (first_node->next)
+		if ((*buffer_points) >= 'a' && (*buffer_points) <= 'z')
 		{
-			first_node = first_node->next;
+			*buffer_points -= 32;
 		}
-		first_node->next = new_node;
+		buffer_points++;
 	}
 }
 
-void sort::Bubble_sort(int *list)
+
+unsigned int APHash(char* str)
 {
-	int temp = 0;
-	for (int i = length-1; i >0; i--)
+	unsigned int hash = 0;
+	int i;
+
+	for (i = 0; *str; i++)
 	{
-		for (int j = 0; j < i; j++)
+		if ((i & 1) == 0)
 		{
-			if (list[j] > list[j + 1])
-			{
-				temp = list[j];
-				list[j] = list[j + 1];
-				list[j + 1] = temp;
-			}
-		}
-	}
-}
-
-bool sort::BinarySearch(int left, int right,int value)
-{
-	if (left >= right)
-	{
-		return false;
-	}
-	int mid = (left + right) / 2;
-	if (list[mid] == value)
-	{
-		return true;
-	}
-	else if (value < list[mid])
-	{
-		BinarySearch(left, mid - 1, value);
-	}
-	else if (value > list[mid])
-	{
-		BinarySearch(mid + 1, right, value);
-	}
-}
-
-void sort::Quick_sort(int start,int end) //可以使用指针，但用索引操作数组更方便
-{
-	int temp = list[start];  //保存好基准数
-	int change = 0;
-	int i = start;  //必要的临时储存
-	int j = end;
-	if (start > end)
-	{
-		return;
-	}
-	while (i != j)
-	{
-		while (list[j] >= temp && i < j)
-		{
-			j--;
-		}
-		while (list[i] <= temp && i < j)
-		{
-			i++;
-		}
-		change= list[i];
-		list[i] = list[j];
-		list[j] = change;
-	}
-	list[start] = list[i];
-	list[i] = temp;
-	Quick_sort(start, i-1);
-	Quick_sort(i + 1, end);
-}
-
-int UnionFind::find(int root)
-{
-	while (pre[root] != root)
-	{
-		root = pre[root];
-	}
-	return root;
-}
-
-void UnionFind::join(int x, int y)
-{
-	int root_x = find(x);
-	int root_y = find(y);
-	if (root_x != root_y)
-	{
-		pre[root_x] = root_y;
-	}
-}
-
-struct tree_node* BinarySearchTree::FindMinNode(struct tree_node* root_node)
-{
-	struct tree_node* Max_node = root_node;
-	while (Max_node->left)
-	{
-		Max_node = Max_node->left;
-	}
-
-	return Max_node;
-}
-
-bool BinarySearchTree::DeleteTreeNode(struct tree_node* root_node,int value)   //没有写完，还未考虑完所有的情况
-{
-	struct tree_node* Node = FindNode(root, value);
-	if (Node == NULL)
-	{
-		printf("找不到删除的值");
-		return false;
-	}
-	else
-	{
-		if (Node->left && Node->right)  //第一种情况，被删除结点有两个子结点时
-		{
-			struct tree_node* replace_node=FindMinNode(Node->right);
-			if (Node->parent == NULL)   //如果被删除的结点是根结点
-			{
-				Node->left->parent = replace_node;
-				Node->right->parent = replace_node;
-				if (replace_node->right != NULL)    //也存replace_node->left==NULL情况，需另外讨论
-				{
-					replace_node->right->parent = replace_node->parent;
-					replace_node->parent->left = replace_node->right;
-
-				}
-				replace_node->left = Node->left;
-				replace_node->right = Node->right;
-				root = replace_node;
-				free(Node);
-				return true;
-			}
-			//左处理未完成
-			//if (Node->parent->left && Node->parent->left->data == Node->data) //如果是左子结点
-			//{
-			//	if (replace_node->right != NULL)
-			//	{
-			//		replace_node->right->parent = replace_node->parent;
-			//		replace_node->parent->left = replace_node->right;
-
-			//	}
-			//	replace_node->parent = Node->parent;
-			//	Node->left->parent = replace_node;
-			//	Node->right->parent = replace_node;
-			//	replace_node->left = Node->left;
-			//	replace_node->right = Node->right;
-			//	Node->parent->left = replace_node;
-			//	replace_node->parent->left = NULL;
-			//	free(Node);
-			//	return true;
-
-			//}
-			else if (Node->parent->right && Node->parent->right->data == Node->data) //如果是右子结点
-			{
-				if (replace_node->right != NULL)
-				{
-					replace_node->right->parent = replace_node->parent;
-					replace_node->parent->left = replace_node->right;
-				}
-				replace_node->parent = Node->parent;
-				Node->left->parent = replace_node;
-				Node->right->parent = replace_node;
-				replace_node->left = Node->left;
-				replace_node->right = Node->right;
-				Node->parent->right = replace_node;
-				free(Node);
-				return true;
-			}
-		}
-	}
-}
-
-struct tree_node* BinarySearchTree::FindNode(struct tree_node* root_node, int value)
-{
-	if (root_node == NULL)    //终止递归用if来判断
-	{
-		return false;
-	}
-	else
-	{
-		if (root_node->data == value)
-		{
-			return root_node;
-		}
-		else if (value < root_node->data)
-		{
-			FindNode(root_node->left, value);
-		}
-		else if (value > root_node->data)
-		{
-			FindNode(root_node->right, value);
-		}
-	}
-}
-
-void BinarySearchTree::InitialBinarySearchTree(struct tree_node* root_node,int value)
-{
-	struct tree_node* new_node = (struct tree_node*)malloc(sizeof(struct tree_node));
-	if (new_node == NULL)
-	{
-		exit(1);
-	}
-	new_node->data = value;
-	new_node->left = NULL;
-	new_node->right = NULL;  //left和right初始化NULL是必不可少的
-	new_node->parent = NULL;
-	if (root_node == NULL)  //只存在于第一次创建root结点时的情况
-	{
-		root_node = new_node;
-		if (root == NULL)
-		{
-			root = root_node;
-		}
-	}
-	else
-	{
-		if (value < root_node->data)
-		{
-			if (root_node->left == NULL)
-			{
-				root_node->left = new_node;
-				new_node->parent = root_node;
-			}
-			else
-			{
-				InitialBinarySearchTree(root_node->left, value);
-			}
+			hash ^= ((hash << 7) ^ (*str++) ^ (hash >> 3));
 		}
 		else
 		{
-			if (root_node->right == NULL)
-			{
-				root_node->right = new_node;
-				new_node->parent = root_node;
-			}
-			else
-			{
-				InitialBinarySearchTree(root_node->right, value);
-			}
+			hash ^= (~((hash << 11) ^ (*str++) ^ (hash >> 5)));
 		}
 	}
+
+	return (hash & 0x7FFFFFFF) % 100000;
 }
 
-void BinarySearchTree::PreTraversal(struct tree_node* root_node)
+char* Return_all_text(char* file_name)
 {
-	if (root_node)   //树的遍历因为用到了函数递归，所以要用if而不是while，while的情况下在当前循环root_node永远是真的所以会死循环
+	FILE* fp = fopen(file_name, "r");
+	if (!fp)
 	{
-		printf("elemnt is %d\n", root_node->data);
-		PreTraversal(root_node->left);
-		PreTraversal(root_node->right);
-	}
-}
-
-void BinarySearchTree::MidTraversal(struct tree_node* root_node)
-{
-	if (root_node)
-	{
-		MidTraversal(root_node->left);
-		printf("elemnt is %d\n", root_node->data);
-		MidTraversal(root_node->right);
-	}
-}
-
-void BinarySearchTree::RearTraversal(struct tree_node* root_node)
-{
-	if (root_node)
-	{
-		RearTraversal(root_node->left);
-		RearTraversal(root_node->right);
-		printf("elemnt is %d\n", root_node->data);
-	}
-}
-
-bool queue::is_empty()
-{
-	if (front == NULL && rear == NULL)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-void queue::enqueue(int value)
-{
-	struct node* new_node = (struct node*)malloc(sizeof(struct node));
-	/*if (new_node == NULL)
-	{
-		printf("false");
+		printf("open error");
 		exit(1);
-	}*/
-	new_node->data = value;
-	new_node->next = NULL;
-	if (front == NULL && rear == NULL)
-	{
-		front = new_node;
-		rear = new_node;
 	}
-	else
+	char buffer_temp[1000] = { "" };
+	char buffer[10000] = { "" };
+	while (fgets(buffer_temp, 1000, fp) != NULL)
 	{
-		rear->next = new_node;
-		rear = new_node;   //因为front和rear都是指向头结点，所以rear->next=new_node等于front->next=new_node的效果
+		strcat(buffer, buffer_temp);
 	}
+	fclose(fp);
+	return buffer;
 }
 
-int queue::dequeue()
+
+void Build_word_information(char* word, char* file_name)
 {
-	if (!is_empty())
+	int addr_word = APHash(word);
+	if (!Word_hash_array[addr_word])
 	{
-		int result = front->data;
-		struct node* p = front;
-		front = front->next;
-		free(p);
-		return result;
+		struct WORD* new_word = (struct WORD*)malloc(sizeof(struct WORD));
+		new_word->word_name = (char*)malloc(sizeof(char) * 20);
+		strcpy(new_word->word_name, word);
+		new_word->current_word = (struct WORD_WITH_TF*)malloc(sizeof(struct WORD_WITH_TF));
+		new_word->current_word->file_name = (char*)malloc(sizeof(char) * 20);
+		strcpy(new_word->current_word->file_name, file_name);
+		new_word->current_word->frequency = 1;
+		new_word->current_word->next = NULL;
+		Word_hash_array[addr_word] = new_word;
 	}
-	else
+	else if (!strcmp(Word_hash_array[addr_word]->word_name, word))
 	{
-		printf("false");
-		return 1;
-	}
-
-}
-
-void queue::Traversal()
-{
-	struct node* temp = front;
-	while (temp != NULL)
-	{
-		printf("element is %d\n", temp->data);
-		temp = temp->next;
-	}
-}
-
-bool stack::is_empty()
-{
-	if (top == NULL)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-void stack::Push(int value)
-{
-	struct node* new_node = (struct node*)malloc(sizeof(struct node));
-	new_node->data = value;
-	if (top == NULL)
-	{
-		new_node->next = NULL;
-		top = new_node;
-	}
-	else
-	{
-		new_node->next = top;
-		top = new_node;
-	}
-}
-
-int stack::Pop()
-{
-	int result=0;
-	struct node* p = top;
-
-	if (!is_empty())
-	{
-		result = top->data;
-		top = top->next;
-	}
-	free(p);
-	return result;
-}
-
-void stack::Traversal()
-{
-	struct node* temp = top;
-	while (temp != NULL)
-	{
-		printf("%d\n", temp->data);
-		temp = temp->next;
-	}
-}
-
-void  List::InitialList(int first, int last)
-{
-
-	struct node* prev = NULL;
-	struct node* current = NULL;
-	for (int i = first; i <= last; i++)
-	{
-		if (head == NULL)
 		{
-			current = (struct node*)malloc(sizeof(struct node));
-			current->data = i;
-			head = current;
-			prev = current;
-			current->next = NULL;
-			continue;
-		}
-		current = (struct node*)malloc(sizeof(struct node*));
-		current->data = i;  //初始化申请的结点 
-		current->next = NULL;  //这一步是必要的 
-		prev->next = current; //交换current和prev，需要prev来指向插入位置的前一个位置 
-		prev = current; //指向current 
-	}
-}
-
-void List::InsertList(int index, int value)
-{
-	struct node* newnode;
-	newnode = (struct node*)malloc(sizeof(struct node*));  
-	struct node* temp = head;    //head应该始终指向链表头，使用temp来零时操作链表
-	newnode->data = value;
-	if (index == 0)   //如果在头插入 
-	{
-		newnode->next = head;
-		head = newnode;
-		temp = newnode;
-	}
-	else
-	{
-		for (int i = 0; i < index; i++)
-		{
-			temp = temp->next;
-		}
-		newnode->next = temp->next;
-		temp->next = newnode;
-	}
-}
-
-int List::FindNode(int value)
-{
-	int index = 0;
-	struct node* temp = head;  //head应该始终指向链表头，使用temp来零时操作链表
-
-	while (temp != NULL)
-	{
-		if (temp->data == value)
-		{
-			return index;
-		}
-		else
-		{
-			index++;
-			temp = temp->next;
-		}
-	}
-	return -1;//查找失败 
-}
-
-int List::DeleteList(int value)
-{
-	int result = FindNode(value);
-	struct node* temp = head;
-	if (result == -1)
-	{
-		return -1;
-	}
-	else 
-	{
-		if (result == 0) //如果删除的第一个结点
-		{
-			head = head->next;
-		}
-		else 
-		{
-			for (int i = 0; i < result - 1; i++)
+			struct WORD* hash_element = Word_hash_array[addr_word];
+			struct WORD_WITH_TF* hash_element_current_word = hash_element->current_word;
+			while (hash_element_current_word->next)
 			{
-				temp = temp->next;
+				if (!strcmp(hash_element_current_word->file_name, file_name))
+				{
+					hash_element_current_word->frequency++;
+				}
+				hash_element_current_word = hash_element_current_word->next;
 			}
-			temp->next = temp->next->next;  //停留在要被删除的结点的前一个结点
-			return 1;
+			if (!strcmp(hash_element_current_word->file_name, file_name))   //最后一个元素
+			{
+				hash_element_current_word->frequency++;
+			}
+			else  //如果连最后一个元素都不是的话
+			{
+				struct WORD_WITH_TF* new_file = (struct WORD_WITH_TF*)malloc(sizeof(struct WORD_WITH_TF));
+				new_file->file_name = (char*)malloc(sizeof(char) * 20);
+				strcpy(new_file->file_name, file_name);
+				new_file->frequency = 1;
+				new_file->next = NULL;
+				hash_element_current_word->next = new_file;
+			}
 		}
-		
-	}
-}
-
-int List::TraversalList()
-{
-	int length = 0;
-	struct node* temp = head;
-	while (temp != NULL)
-	{
-		printf("List element is %d\n", temp->data);
-		temp= temp->next;
-		length++;
-	}
-	return length;  //返回链表的长度
-}
-
-
-
-int main()
-{
-	/*List a;   
-	a.InitialList(0, 10);
-	a.InsertList(0, 100);
-	a.DeleteList(8);
-	a.DeleteList(100);
-	a.TraversalList();
-	Stack a;
-	a.Push(10);
-	a.Push(20);
-	printf("%d\n",a.Pop());
-	a.Push(30);
-	a.Push(40);
-	a.Traversal();
-	Queue a;
-	a.enqueue(0);
-	a.enqueue(10);
-	a.enqueue(20);
-	a.dequeue();
-	a.Traversal();
-	BinarySearchTree a;
-	a.InitialBinarySearchTree(a.root,41);
-	a.InitialBinarySearchTree(a.root, 20);
-	a.InitialBinarySearchTree(a.root, 65);
-	a.InitialBinarySearchTree(a.root, 11);
-	a.InitialBinarySearchTree(a.root, 29);
-	a.InitialBinarySearchTree(a.root, 32);
-	a.InitialBinarySearchTree(a.root, 50);
-	a.InitialBinarySearchTree(a.root, 91);
-	a.InitialBinarySearchTree(a.root, 72);
-	a.InitialBinarySearchTree(a.root, 99);
-	a.InitialBinarySearchTree(a.root, 27);
-	a.DeleteTreeNode(a.root, 20);
-	unionfind a;
-	for (int i = 0; i < 10; i++)
-	{
-		a.pre[i] = i;
-	}
-	a.join(0, 7);
-	a.join(2, 8);
-	a.join(7, 8);
-	for (int i = 0; i < 10; i++)
-	{
-		printf("%d,", a.pre[i]);
-	}
-	sort a;
-	a.bubble_sort(a.list);
-	for (int i = 0; i < 10; i++)
-	{
-		printf("%d,",a.list[i]);
-	}
-	bool b=a.BinarySearch(0, a.length, 10);
-	if (b)
-	{
-		printf("yes");
 	}
 	else
 	{
-		printf("false");
+		//printf("crash");  
 	}
-	a.Quick_sort(0,a.length-1);
-	Hash a;
-	for (int i = 0; i < 100; i++)
+}
+
+void Build_inverted_index(char* all_text, char* file_name)
+{
+	Upper_any_words(all_text);
+	char* token = strtok(all_text, delimiter);
+	while (token)
 	{
-		a.Hash[i] = NULL;
+		Build_word_information(token, file_name);
+		token = strtok(NULL, delimiter);
 	}
-	a.InsertValue(111111111111110);
-	a.InsertValue(30);
-	a.InsertValue(20);
-	printf("%d", a.Hash[a.Hash_addr(20)]->data);*/
+}
+
+void Traversal()
+{
+	int i = 0;
+	while (i < 100000)
+	{
+		if (Word_hash_array[i])
+		{
+			struct WORD* elem = Word_hash_array[i];
+			printf("单词是:%s ", Word_hash_array[i]->word_name);
+			while (Word_hash_array[i]->current_word)
+			{
+				printf(" 所属文件为:%s,", Word_hash_array[i]->current_word->file_name);
+				printf("出现频率为%d", Word_hash_array[i]->current_word->frequency);
+				Word_hash_array[i]->current_word = Word_hash_array[i]->current_word->next;
+			}
+			printf("\n");
+		}
+		i++;
+	}
+}
+
+void Build_Inverted_index_all_text()
+{
+	char file_direct[100];
+	for (int i = 1; i < 10; i++)
+	{
+		char file_number[] = "wp00";
+		char postfix[] = { ".txt" };
+		char file_name[20];
+		sprintf(file_name, "%s%d%s", file_number, i, postfix);
+		sprintf(file_direct, "%s%s", Direct_Document, file_name);
+		char* all_text = Return_all_text(file_direct, file_name);
+		Build_inverted_index(all_text, file_name);
+	}
+	for (int i = 11; i < 99; i++)
+	{
+		char file_number[] = "wp0";
+		char postfix[] = { ".txt" };
+		char file_name[20];
+		sprintf(file_name, "%s%d%s", file_number, i, postfix);
+		sprintf(file_direct, "%s%s", Direct_Document, file_name);
+		char* all_text = Return_all_text(file_direct, file_name);
+		Build_inverted_index(all_text, file_name);
+	}
+	for (int i = 100; i < 221; i++)
+	{
+		char file_number[] = "wp";
+		char postfix[] = { ".txt" };
+		char file_name[20];
+		sprintf(file_name, "%s%d%s", file_number, i, postfix);
+		sprintf(file_direct, "%s%s", Direct_Document, file_name);
+		char* all_text = Return_all_text(file_direct, file_name);
+		Build_inverted_index(all_text, file_name);
+	}
+}
+
+void Response_system(char* query)
+{
+	Upper_any_words(query);
+	Build_Inverted_index_all_text();
+	int addr = APHash(query);
+	if (!Word_hash_array[addr])
+	{
+		printf("There is no any information about this word..\n");
+		exit(1);
+	}
+	int most_frequency = 0;
+	char text_name[100];
+	char output_buffer[500];
+	int Is_addr = APHash("IS");
+	struct IS_QUERY* head = (struct IS_QUERY*)malloc(sizeof(struct IS_QUERY));
+	char head_default_name[] = { "None" };
+	head->file_name = (char*)malloc(sizeof(char) * 20);
+	strcpy(head->file_name, head_default_name);
+	head->score = 0;
+	struct WORD_WITH_TF* query_word = Word_hash_array[addr]->current_word;
+	struct WORD_WITH_TF* query_is = Word_hash_array[Is_addr]->current_word;
+	struct WORD_WITH_TF* query_is_temp;
+
+	while (query_word->next)
+	{
+		query_is_temp = query_is;
+		while (query_is_temp->next)
+		{
+			if (!strcmp(query_is_temp->file_name, query_word->file_name))
+			{
+				struct IS_QUERY* new_node = (struct IS_QUERY*)malloc(sizeof(struct IS_QUERY));
+				new_node->file_name = (char*)malloc(sizeof(char) * 20);
+				strcpy(new_node->file_name, query_word->file_name);
+				new_node->score = (query_is_temp->frequency) + (query_word->frequency);
+				if (new_node->score > head->score)
+				{
+					strcpy(head->file_name, new_node->file_name);
+					head->score = new_node->score;
+					head->next = new_node;
+				}
+			}
+			query_is_temp = query_is_temp->next;
+		}
+		query_word = query_word->next;
+	}
+
+	strcpy(text_name, head->file_name);
+
+	char response_direct[100] = { "" };
+	strcpy(response_direct, Direct_Document);
+	strcat(response_direct, text_name);
+
+	printf("%s", response_direct);
+	printf("\n\n");
+	FILE* fp = fopen(response_direct, "r");
+	if (fp == NULL)
+	{
+		printf("open error");
+	}
+	while (fgets(output_buffer, 500, fp))
+	{
+		char* output_text = (char*)malloc(sizeof(char) * 500);
+		strcpy(output_text, output_buffer);
+		Upper_any_words(output_buffer);
+		char* token = strtok(output_buffer, delimiter);
+		char* last_word = (char*)malloc(sizeof(char) * 20);
+		while (token)
+		{
+			if (!strcmp(token, "IS"))
+			{
+				char compare_word[20];
+				strcpy(compare_word, Word_hash_array[addr]->word_name);
+				Upper_any_words(compare_word);
+				if (!strcmp(last_word, compare_word))
+				{
+					printf("%s", output_text);
+					return;
+				}
+			}
+			strcpy(last_word, token);
+			token = strtok(NULL, delimiter);
+		}
+	}
+	printf("There is no any information about this word..");
+	fclose(fp);
+}
+
+int main(int argc, char* argv[])
+{
+	char query_word[20] = { "tokyo" };
+	printf("input your query word:");
+	//scanf("%s", query_word);
+	Response_system(query_word);
 	return 0;
 }
+
+
