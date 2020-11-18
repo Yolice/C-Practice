@@ -95,14 +95,60 @@ void counting_sort(int* first)
 	
 }
 
-void bucket_sort()
+
+void bucket_sort(int* unsort_list)
 {
-
-}
-
-void radix_sort()
-{
-
+	struct Bucket* Bucket_Sort_Array[10] = {NULL};
+	for (int i = 0; i < length; i++)
+	{
+		int put_index = *unsort_list / 10;
+		struct Bucket* new_node = (struct Bucket*)malloc(sizeof(struct Bucket));
+		new_node->value = *unsort_list;
+		new_node->next = NULL;
+		if (Bucket_Sort_Array[put_index])  //插入排序
+		{
+			struct Bucket* first = Bucket_Sort_Array[put_index];
+			struct Bucket* first_prev = Bucket_Sort_Array[put_index];
+			if (new_node->value < first->value)
+			{
+				new_node->next = first;
+				Bucket_Sort_Array[put_index] = new_node;
+			}
+			else
+			{
+				while (first->next && new_node->value > first->value)
+				{
+					first = first->next;
+				}
+				if (first->next) //中间case
+				{
+					while (first_prev->next != first)
+					{
+						first_prev = first_prev->next;
+					}
+					first_prev->next = new_node;
+					new_node->next = first;
+				}
+				else //末尾case
+				{
+					first->next = new_node;
+				}
+			}
+		}
+		else
+		{
+			Bucket_Sort_Array[put_index] = new_node;
+		}
+		unsort_list++;
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		while (Bucket_Sort_Array[i])
+		{
+			printf("%d ", Bucket_Sort_Array[i]->value);
+			Bucket_Sort_Array[i] = Bucket_Sort_Array[i]->next;
+		}
+	}
 }
 
 
