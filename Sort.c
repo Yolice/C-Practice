@@ -4,7 +4,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-int unsort_list[100] = {3,44,38,99,47,15,36,26,27,2,46,4,19,50,48};
+int unsort_list[100] = { 99,44,38,3,47,15,36,26,27,2,46,4,19,50,48 };
 
 const int length = 15;
 const int counting_length = 9;
@@ -20,9 +20,9 @@ struct Bucket
 void print_list(int* first)
 {
 	int i = 0;
-	while (i<length)
+	while (i < length)
 	{
-		printf("%d ",unsort_list[i]);
+		printf("%d ", unsort_list[i]);
 		i++;
 	}
 }
@@ -103,13 +103,13 @@ void counting_sort(int* first)
 		printf("%d ", *reload_point);
 		reload_point++;
 	}*/
-	
+
 }
 
 
 int* bucket_sort(int* unsort_list)
 {
-	struct Bucket* Bucket_Sort_Array[10] = {NULL};
+	struct Bucket* Bucket_Sort_Array[10] = { NULL };
 	for (int i = 0; i < length; i++)
 	{
 		int put_index = *unsort_list / 10;
@@ -180,14 +180,85 @@ int get_max(int* unsort_list, int n)
 	return max;
 }
 
-void radix_sort(int* unsort_list)
+
+void radix_bucket_sort(int* unsort_list,int bit)
 {
-	int max = get_max(unsort_list, length);
-	int* bucket_sort_res=bucket_sort(unsort_list);
+	struct Bucket* Bucket_Sort_Array[5] = { NULL };  //每个桶范围是2，从0-1,2-3,4-5这样，形成0-9
 	for (int i = 0; i < length; i++)
 	{
-		printf("%d ", *bucket_sort_res);
-		bucket_sort_res++;
+		int put_index = (((*unsort_list / bit) % 10) / 2) % 5 ;
+		struct Bucket* new_node = (struct Bucket*)malloc(sizeof(struct Bucket));
+		new_node->value = *unsort_list;
+		new_node->next = NULL;
+		if (Bucket_Sort_Array[put_index])
+		{
+			struct Bucket* first = Bucket_Sort_Array[put_index];
+			struct Bucket* first_prev = Bucket_Sort_Array[put_index];
+
+			if (new_node->value / bit % 10 < first->value / bit % 10)
+			{
+				new_node->next = first;
+				Bucket_Sort_Array[put_index] = new_node;
+			}
+			else
+			{
+				while (new_node->value / bit % 10 >= first->value / bit % 10 && first->next)
+				{
+					first = first->next;
+				}
+				if (new_node->value / bit % 10 < first->value / bit % 10)
+				{
+					while (first_prev->next != first)
+					{
+						first_prev = first_prev->next;
+					}
+					if (first_prev->next) //中间case
+					{
+						first_prev->next = new_node;
+						new_node->next = first;
+					}
+					else  //末尾case
+					{
+						first->next = new_node;
+					}
+				}
+				else  //末尾case
+				{
+					first->next = new_node;
+				}
+			}
+		}
+		else
+		{
+			Bucket_Sort_Array[put_index] = new_node;
+		}
+		unsort_list++;
+	}
+	int* SortReady_point = SortReady;
+	for (int i = 0; i < 5; i++)
+	{
+		while (Bucket_Sort_Array[i])
+		{
+			*SortReady_point = Bucket_Sort_Array[i]->value;
+			SortReady_point++;
+			Bucket_Sort_Array[i] = Bucket_Sort_Array[i]->next;
+		}
+	}
+}
+
+
+void radix_sort(int* unsort_list)  //只例句两位数情况
+{
+	radix_bucket_sort(unsort_list, 1);
+	for (int i = 0; i < length; i++)
+	{
+		printf("%d ", SortReady[i]);
+	}
+	printf("\n");
+	radix_bucket_sort(SortReady, 10);
+	for (int i = 0; i < length; i++)
+	{
+		printf("%d ", SortReady[i]);
 	}
 }
 
