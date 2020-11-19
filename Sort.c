@@ -2,10 +2,21 @@
 //
 
 #include<stdio.h>
+#include<stdlib.h>
 
-int unsort_list[100] = {3,44,38,5,47,15,36,26,27,2,46,4,19,50,48};
+int unsort_list[100] = {3,44,38,99,47,15,36,26,27,2,46,4,19,50,48};
+
 const int length = 15;
 const int counting_length = 9;
+
+int SortReady[length];
+
+struct Bucket
+{
+	int value;
+	struct Bucket* next;
+};
+
 void print_list(int* first)
 {
 	int i = 0;
@@ -96,7 +107,7 @@ void counting_sort(int* first)
 }
 
 
-void bucket_sort(int* unsort_list)
+int* bucket_sort(int* unsort_list)
 {
 	struct Bucket* Bucket_Sort_Array[10] = {NULL};
 	for (int i = 0; i < length; i++)
@@ -141,22 +152,51 @@ void bucket_sort(int* unsort_list)
 		}
 		unsort_list++;
 	}
+	int* SortReady_point = SortReady;
+	int* SortReady_head = SortReady_point;
 	for (int i = 0; i < 10; i++)
 	{
 		while (Bucket_Sort_Array[i])
 		{
-			printf("%d ", Bucket_Sort_Array[i]->value);
+			*SortReady_point = Bucket_Sort_Array[i]->value;
+			SortReady_point++;
 			Bucket_Sort_Array[i] = Bucket_Sort_Array[i]->next;
 		}
 	}
+	return SortReady;
 }
 
+int get_max(int* unsort_list, int n)
+{
+	int max = -666;
+	for (int i = 0; i < n; i++)
+	{
+		if (*unsort_list > max)
+		{
+			max = *unsort_list;
+		}
+		unsort_list++;
+	}
+	return max;
+}
+
+void radix_sort(int* unsort_list)
+{
+	int max = get_max(unsort_list, length);
+	int* bucket_sort_res=bucket_sort(unsort_list);
+	for (int i = 0; i < length; i++)
+	{
+		printf("%d ", *bucket_sort_res);
+		bucket_sort_res++;
+	}
+}
 
 
 int main()
 {
 	int* first = unsort_list;
-	//counting_sort(first);
+	radix_sort(unsort_list);
+	//bucket_sort(first);
 	//insert_sort();
 	//print_list(first);
 }
