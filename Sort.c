@@ -181,12 +181,12 @@ int get_max(int* unsort_list, int n)
 }
 
 
-void radix_bucket_sort(int* unsort_list,int bit)
+void radix_bucket_sort(int* unsort_list, int bit)
 {
 	struct Bucket* Bucket_Sort_Array[5] = { NULL };  //每个桶范围是2，从0-1,2-3,4-5这样，形成0-9
 	for (int i = 0; i < length; i++)
 	{
-		int put_index = (((*unsort_list / bit) % 10) / 2) % 5 ;
+		int put_index = (((*unsort_list / bit) % 10) / 2) % 5;
 		struct Bucket* new_node = (struct Bucket*)malloc(sizeof(struct Bucket));
 		new_node->value = *unsort_list;
 		new_node->next = NULL;
@@ -262,11 +262,54 @@ void radix_sort(int* unsort_list)  //只例句两位数情况
 	}
 }
 
+void quick_sort(int left, int right)
+{
+	int pivot, i, j,temp;
+	if (left > right)
+	{
+		return;
+	}
+	pivot = unsort_list[left];
+	i = left;
+	j = right;
+	while (i < j)
+	{
+		while (i < j && unsort_list[j] >= pivot)
+		{
+			j--;
+		}
+		while (i < j && unsort_list[i] <= pivot)
+		{
+			i++;
+		}
+		if (i < j)
+		{
+			temp = unsort_list[i];
+			unsort_list[i] = unsort_list[j];
+			unsort_list[j] = temp;
+		}
+	}
+	unsort_list[left] = unsort_list[j];
+	unsort_list[j] = pivot;
+	for (int k = 0; k < 15; k++)
+	{
+		printf("%d ", unsort_list[k]);
+	}
+	printf("\n");
+	quick_sort(left,j-1);
+	quick_sort(j+1,right);
+}
+
+void quick_select()
+{
+
+}
+
 
 int main()
 {
-	int* first = unsort_list;
-	radix_sort(unsort_list);
+	quick_sort(0,14);
+	//radix_sort(unsort_list);
 	//bucket_sort(first);
 	//insert_sort();
 	//print_list(first);
