@@ -5,7 +5,6 @@
 #include<stdlib.h>
 
 int unsort_list[100] = { 99,44,38,3,47,15,36,26,27,2,46,4,19,50,48 };
-
 const int length = 15;
 const int counting_length = 9;
 
@@ -264,7 +263,7 @@ void radix_sort(int* unsort_list)  //只例句两位数情况
 
 void quick_sort(int left, int right)
 {
-	int pivot, i, j,temp;
+	int pivot, i, j, temp;
 	if (left > right)
 	{
 		return;
@@ -296,19 +295,54 @@ void quick_sort(int left, int right)
 		printf("%d ", unsort_list[k]);
 	}
 	printf("\n");
-	quick_sort(left,j-1);
-	quick_sort(j+1,right);
+	quick_sort(left, j - 1);
+	quick_sort(j + 1, right);
 }
 
-void quick_select()
+int quick_select(int left,int right,int index)
 {
-
+	int pivot, i, j, temp;
+	pivot = unsort_list[left];
+	i = left;
+	j = right;
+	while (i < j)
+	{
+		while (i < j && unsort_list[j] >= pivot)
+		{
+			j--;
+		}
+		while (i < j && unsort_list[i] <= pivot)
+		{
+			i++;
+		}
+		if (i < j)
+		{
+			temp = unsort_list[i];
+			unsort_list[i] = unsort_list[j];
+			unsort_list[j] = temp;
+		}
+	}
+	unsort_list[left] = unsort_list[j];
+	unsort_list[j] = pivot;
+	if (j == index)
+	{
+		printf("arr[%d] is %d\n", index,unsort_list[index]);
+		return unsort_list[index];
+	}
+	else if (index < j)
+	{
+		quick_select(left, j - 1, index);
+	}
+	else
+	{
+		quick_select(j + 1, right, index);
+	}
 }
 
 
 int main()
 {
-	quick_sort(0,14);
+	quick_select(0,14,14);
 	//radix_sort(unsort_list);
 	//bucket_sort(first);
 	//insert_sort();
