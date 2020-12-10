@@ -237,6 +237,150 @@ void Traversal(struct Tree_node* head)
 	Traversal(head->right);
 }
 
+struct Tree_node* Search(int value,struct Tree_node* root)
+{
+	if (root==NULL)
+	{
+		return false;
+	}
+	else if (root->value == value)
+	{
+		return root;
+	}
+	else
+	{
+		if (value < root->value)
+		{
+			Search(value, root->left);
+		}
+		else
+		{
+			Search(value, root->right);
+		}
+	}
+}
+
+void Recolor_Rotation(struct Tree_node* delete_node)
+{
+	if(delete_node->color == RED)
+	{
+		delete_node->color = BLACK; //递归出口2
+	}
+	else if (delete_node->color == BLACK)
+	{
+		if (delete_node == delete_node->parent->left)  //如果是左子树
+		{
+			if (delete_node->parent->right == NULL || delete_node->parent->right->color == BLACK)  //right应该不可能为nil，如果nil违反了红黑树定义,即黑深度不同
+			{
+				if (delete_node->parent->right->right->color == RED)  //递归的出口1
+				{
+					delete_node->parent->right->color = delete_node->parent->color;
+					delete_node->parent->color = BLACK;
+					delete_node->parent->right->right->color = BLACK;
+					Left_rotation(delete_node->parent);
+				}
+				else if ((delete_node->parent->right->right == NULL || delete_node->parent->right->right->color == BLACK) && delete_node->parent->right->left->color == RED)
+				{
+					delete_node->parent->right->color = RED;
+					delete_node->parent->right->left->color = BLACK;
+					Right_rotation(delete_node->parent->right);
+					Recolor_Rotation(delete_node);
+				}
+				else if ((delete_node->parent->right->left == NULL || delete_node->parent->right->left->color == BLACK) && (delete_node->parent->right->right == NULL || delete_node->parent->right->right->color == BLACK))
+				{
+					delete_node->parent->right->color = RED;
+					Recolor_Rotation(delete_node->parent);
+				}
+			}
+			else if (delete_node->parent->right->color == RED)
+			{
+				delete_node->parent->right->color = BLACK;
+				delete_node->parent->color = RED;
+				Left_rotation(delete_node->parent);
+				Recolor_Rotation(delete_node);
+			}
+		}
+
+		else if (delete_node == delete_node->parent->right)  //右子树case
+		{
+
+		}
+	}
+}
+
+
+
+void Delete_Operation(struct Tree_node* delete_node)
+{
+	if (delete_node == root)
+	{
+		delete_node = NULL;
+		return;
+	}
+	int temp=0;
+	if (delete_node->left == NULL && delete_node->right == NULL)  //case 1 所有case都可以换成case来处理
+	{
+		if (delete_node->color == RED)   //红色直接删除即可
+		{
+			if (delete_node == delete_node->parent->left)
+			{
+				delete_node->parent->left = NULL;
+			}
+			else if(delete_node == delete_node->parent->right)
+			{
+				delete_node->parent->right = NULL;
+			}
+			free(delete_node);
+		}
+		else if (delete_node->color == BLACK)
+		{
+			Recolor_Rotation(delete_node);
+			if (delete_node == delete_node->parent->left)
+			{
+				delete_node->parent->left = NULL;
+			}
+			else if(delete_node == delete_node->parent->right)
+			{
+				delete_node->parent->right = NULL;
+			}
+			free(delete_node);
+		}
+
+	}
+	else if (delete_node->left && delete_node->right == NULL)
+	{
+		temp = delete_node->value;
+		delete_node->value = delete_node->left->value;
+		delete_node->left->value = temp;
+		Delete_Operation(delete_node->left);
+	}
+	else if (delete_node->right && delete_node->left == NULL)
+	{
+		temp = delete_node->value;
+		delete_node->value = delete_node->right->value;
+		delete_node->right->value = temp;
+		Delete_Operation(delete_node->right);
+	}
+	else if (delete_node->left && delete_node->right)
+	{
+		temp = delete_node->value;
+		struct Tree_node* replace_node=delete_node->right;
+		while (replace_node->left)
+		{
+			replace_node = replace_node->left;
+		}
+		delete_node->value = replace_node->value;
+		replace_node->value = temp;
+		Delete_Operation(replace_node);
+	}
+	else
+	{
+		printf("error!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");  //这个case不应该出现
+		exit(1);
+	}
+}
+
+
 int main()
 {
 	Insert_node(12);
@@ -259,6 +403,8 @@ int main()
 	Insert_node(3);
 	Insert_node(8);
 	Insert_node(17);
-	Traversal(root);
+
+
+
 	return 0;
 }
